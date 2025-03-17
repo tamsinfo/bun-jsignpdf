@@ -36,10 +36,23 @@ export const signPdf = async (
 	const uniq = `jsignpdf-${new Date().getTime()}`;
 	const infile = `${dir}/${uniq}.pdf`;
 	const outfile = infile.replace(/\.pdf$/, '_signed.pdf');
-	const certfile = `${dir}/${uniq}.p12`;
+	const certfile = `${dir}/${uniq}.pfx`;
 
-	await Bun.write(infile, pdf.buffer);
-	await Bun.write(certfile, p12.buffer);
+	Bun.write(infile, pdf.buffer)
+	.then(() => {
+		console.log("Successfully copied PDF to temporary directory.")
+	})
+	.catch((err) => {
+		console.error("Error copying PDF to temporary directory:", err)
+	});
+	
+	Bun.write(certfile, p12.buffer)
+	.then(() => {
+		console.log("Successfully copied PFX to temporary directory.")
+	})
+	.catch((err) => {
+		console.error("Error copying PFX to temporary directory:", err)
+	});
 
 	// TODO: Make sure options.signatureBox is of correct format
 
@@ -79,7 +92,7 @@ export const signPdf = async (
 			].filter(Boolean) as string[];
 
 		Bun.spawn(command, {
-			cwd: import.meta.dir.concat('/lib/jsignpdf-2.2.2'),
+			cwd: import.meta.dir.concat('/lib/jsignpdf-2.3.0'),
 			onExit: (_subprocess, errorCode, _signalCode, error) => {
 				if (error) {
 					console.error(errorCode, error);
